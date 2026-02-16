@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama BPMN - Proceso Netflix</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: white;
+            font-family: Arial, sans-serif;
+        }
+        
+        .diagram-container {
+            width: 1400px;
+            margin: 0 auto;
+            background: white;
+        }
+        
+        .pool {
+            border: 2px solid #333;
+            margin-bottom: 0;
+            position: relative;
+            min-height: 150px;
+        }
+        
+        .pool-label {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 30px;
+            background: #e8e8e8;
+            border-right: 2px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .pool-content {
+            margin-left: 32px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            min-height: 110px;
+        }
+        
+        .element {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 11px;
+            padding: 8px;
+        }
+        
+        .start-event, .end-event {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 3px solid #2ecc71;
+            background: white;
+            flex-shrink: 0;
+        }
+        
+        .end-event {
+            border: 5px solid #e74c3c;
+        }
+        
+        .timer-event {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 3px solid #f39c12;
+            background: white;
+            flex-shrink: 0;
+            position: relative;
+        }
+        
+        .timer-event::before {
+            content: "⏱";
+            font-size: 18px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .task {
+            min-width: 100px;
+            height: 60px;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            background: #ecf0f1;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .task.ti {
+            background: #ffcccc;
+            border-color: #e74c3c;
+        }
+        
+        .gateway {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f39c12;
+            background: #fff9e6;
+            transform: rotate(45deg);
+            flex-shrink: 0;
+            position: relative;
+        }
+        
+        .gateway-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-weight: bold;
+            font-size: 20px;
+        }
+        
+        .gateway.parallel {
+            border-color: #9b59b6;
+            background: #f4ecf7;
+        }
+        
+        .arrow {
+            flex-shrink: 0;
+            width: 30px;
+            height: 2px;
+            background: #333;
+            position: relative;
+        }
+        
+        .arrow::after {
+            content: "";
+            position: absolute;
+            right: -5px;
+            top: -4px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid #333;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+        }
+        
+        .label {
+            font-size: 9px;
+            margin-top: 5px;
+            color: #666;
+        }
+        
+        .branch-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+        }
+        
+        .branch {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .legend-items {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+        
+        .legend-box {
+            width: 30px;
+            height: 20px;
+            border: 2px solid #333;
+            border-radius: 3px;
+        }
+        
+        .legend-circle {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #2ecc71;
+            border-radius: 50%;
+        }
+        
+        .legend-diamond {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f39c12;
+            background: #fff9e6;
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="diagram-container">
+        <div class="title">Diagrama BPMN - Proceso de Streaming Netflix</div>
+        
+        <!-- POOL 1: USUARIO -->
+        <div class="pool">
+            <div class="pool-label">Usuario</div>
+            <div class="pool-content">
+                <div class="element start-event"></div>
+                <div class="arrow"></div>
+                <div class="element task">
+                    <span>Abrir<br>aplicación</span>
+                </div>
+                <div class="arrow"></div>
+                <div class="element task">
+                    <span>Ingresar email<br>y contraseña</span>
+                </div>
+                <div class="arrow"></div>
+                <div class="element timer-event"></div>
+                <div class="arrow"></div>
+                <div class="element task">
+                    <span>Ver<br>recomendaciones</span>
+                </div>
+                <div class="arrow"></div>
+                <div class="element task">
+                    <span>Seleccionar<br>contenido</span>
+                </div>
+                <div class="arrow"></div>
+                <div class="element task">
+                    <span>Reproducir<br>video</span>
+                </div>
+                <div class="arrow"></div>
+                <div class="element end-event"></div>
+            </div>
+        </div>
+        
+        <!-- POOL 2: SISTEMA NETFLIX -->
+        <div class="pool">
+            <div class="pool-label">Sistema Netflix (Frontend)</div>
+            <div class="pool-content" style="min-height: 180px;">
+                <div class="element start-event"></div>
+                <div class="arrow"></div>
+                <div class="element task ti">
+                    <span>Mostrar pantalla<br>de login (TI)</span>
+                </div>
+                <div class="arrow"></div>
+                <div class="element task ti">
+                    <span>Validar<br>credenciales (TI)</span>
+                </div>
+                <div class="arrow"></div>
+                <div class="element gateway">
+                    <div class="gateway-content">✕</div>
+                </div>
+                <div class="arrow"></div>
+                <div class="branch-container">
+                    <div class="branch">
+                        <div class="element task ti">
+                            <span>Mostrar<br>recomendaciones (TI)</span>
+                        </div>
+                        <div class="arrow"></div>
+                        <div class="element task ti">
+                            <span>Solicitar<br>video (TI)</span>
+                        </div>
+                        <div class="arrow"></div>
+                        <div class="element task ti">
+                            <span>Recibir<br>stream (TI)</span>
+                        </div>
+                        <div class="arrow"></div>
+                        <div class="element end-event"></div>
+                    </div>
+                    <div class="branch" style="margin-top: -60px; margin-left: -80px;">
+                        <div style="font-size: 10px; color: #e74c3c; margin-right: 5px;">No ↓</div>
+                        <div class="element task ti" style="margin-top: 60px;">
+                            <span>Solicitar<br>suscripción (TI)</span>
+                        </div>
+                        <div class="arrow" style="margin-top: 60px;"></div>
+                        <div class="element end-event" style="margin-top: 60px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- POOL 3: BACKEND -->
+        <div class="pool">
+            <div class="pool-label">Servidor Backend (TI)</div>
+            <div class="pool-content" style="min-height: 180px;">
+                <div class="element start-event"></div>
+                <div class="arrow"></div>
+                <div class="element task ti">
+                    <span>Verificar<br>suscripción (TI)</span>
+                </div>
+                <div class="arrow"></div>
+                <div class="element task ti">
+                    <span>Algoritmo de<br>recomendación<br>(ML/TI)</span>
+                </div>
+                <div class="arrow"></div>
+                <div class="element gateway parallel">
+                    <div class="gateway-content">+</div>
+                </div>
+                <div class="arrow"></div>
+                <div class="branch-container">
+                    <div class="branch">
+                        <div class="element task ti">
+                            <span>Obtener<br>metadatos (TI)</span>
+                        </div>
+                    </div>
+                    <div class="branch" style="margin-top: 10px;">
+                        <div class="element task ti">
+                            <span>Registrar<br>actividad (TI)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="arrow"></div>
+                <div class="element gateway parallel">
+                    <div class="gateway-content">+</div>
+                </div>
+                <div class="arrow"></div>
+                <div class="element end-event"></div>
+            </div>
+        </div>
+        
+        <!-- POOL 4: AWS -->
+        <div class="pool">
+            <div class="pool-label">Servicios AWS (Cloud)</div>
+            <div class="pool-content">
+                <div class="element start-event"></div>
+                <div class="arrow"></div>
+                <div class="element task ti">
+                    <span>Procesar<br>streaming<br>(AWS MediaConvert)</span>
+                </div>
+                <div class="arrow"></div>
+                <div class="element task ti">
+                    <span>Optimizar calidad<br>según ancho de banda</span>
+                </div>
+                <div class="arrow"></div>
+                <div class="element task ti">
+                    <span>Entregar video<br>vía CDN<br>(CloudFront)</span>
+                </div>
+                <div class="arrow"></div>
+                <div class="element end-event"></div>
+            </div>
+        </div>
+        
+        <!-- LEYENDA -->
+        <div class="legend">
+            <div class="legend-title">Leyenda de Elementos BPMN:</div>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-circle"></div>
+                    <span>Evento de Inicio</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-circle" style="border-color: #e74c3c; border-width: 4px;"></div>
+                    <span>Evento de Fin</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box" style="border-color: #3498db; background: #ecf0f1; border-radius: 5px;"></div>
+                    <span>Tarea</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box" style="border-color: #e74c3c; background: #ffcccc; border-radius: 5px;"></div>
+                    <span>Tarea TI (Tecnología)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-diamond"></div>
+                    <span>Gateway Exclusivo (Decisión)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-diamond" style="border-color: #9b59b6; background: #f4ecf7;"></div>
+                    <span>Gateway Paralelo</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-circle" style="border-color: #f39c12;"></div>
+                    <span>Evento Temporizado</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
